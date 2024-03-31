@@ -22,8 +22,6 @@ class Snake_Item(QWidget):
 
 
 class Snake(QWidget):
-    game_over_signal = pyqtSignal()
-
     def __init__(self, head, tail):
         super().__init__()
 
