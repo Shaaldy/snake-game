@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtGui import QPainter, QColor, QPen
 from PyQt6.QtWidgets import QWidget
 
 
@@ -11,9 +11,8 @@ class Apple(QWidget):
         self.y = 100
 
     def paintEvent(self, event):
-        qp = QPainter(self)
-        self.draw_apple(qp)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-    def draw_apple(self, qp):
-        qp.setBrush(QColor(255, 0, 0))  # Красное яблоко
-        qp.drawRect(self.x, self.y, self.apple_size, self.apple_size)
+        painter.setBrush(QColor(255, 0, 0))
+        painter.drawEllipse(self.x, self.y, self.apple_size, self.apple_size)
