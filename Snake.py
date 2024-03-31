@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, pyqtSignal
 from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
 
@@ -22,8 +22,11 @@ class Snake_Item(QWidget):
 
 
 class Snake(QWidget):
+    game_over_signal = pyqtSignal()
+
     def __init__(self, head, tail):
         super().__init__()
+
         self.snake_items = []
         self.head = head
         self.tail = tail

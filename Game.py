@@ -1,8 +1,10 @@
+import sys
 from random import randint
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QMainWindow, QFrame, QApplication, QGridLayout, QWidget, QVBoxLayout, QStackedLayout
+from PyQt6.QtWidgets import QMainWindow, QFrame, QApplication, QGridLayout, QWidget, QVBoxLayout, QStackedLayout, \
+    QMessageBox, QLabel, QStatusBar
 
 from Apple import Apple
 from Snake import Snake, Snake_Item
@@ -46,6 +48,11 @@ class Game(QMainWindow):
         self.main_layout = QGridLayout()
         central_widget.setLayout(self.main_layout)
 
+        self.statusBar = QStatusBar()
+        self.setStatusBar(self.statusBar)
+        self.score = 0
+        self.update_score()
+
         self.chess_board = Field()
         self.head = Snake_Item()
         self.tail = Snake_Item()
@@ -70,8 +77,11 @@ class Game(QMainWindow):
         self.eaten_apple = False
 
     def move_snake(self):
-        self.snake.move_snake()  # Двигаем змейку
-        self.snake.repaint()  # Перерисовываем змейку
+        self.snake.move_snake()
+
+    def update_score(self):
+        self.score += 10
+        self.statusBar.showMessage(f"Score: {self.score}")
 
     def snake_apple(self):
         apple_x = self.apple.x
@@ -86,9 +96,18 @@ class Game(QMainWindow):
                 head_y + self.snake.head.snake_size > apple_y):
             self.eaten_apple = True
 
+    def snake_conflict(self):
+        head_x = self.snake.head.x
+        head_y = self.snake.head.y
+
+        for segment in self.snake.snake_items[2:]:
+            if head_x == segment.x and head_y == segment.y:
+                return True
+        return False
+
     def generate_apple_pos(self):
-        snake_segments = self.snake.snake_items
-        positions = [(segment.x, segment.y) for segment in snake_segments]
+        snake_body = self.snake.snake_items
+        positions = [(body.x, body.y) for body in snake_body]
 
         while True:
             new_x = randint(0, self.chess_board.width() - self.apple.apple_size)
@@ -98,16 +117,38 @@ class Game(QMainWindow):
                 return new_x, new_y
 
     def update_game(self):
-        self.snake_apple()
+        if self.snake_conflict():
+            self.game_over()
 
+        self.snake_apple()
         if self.eaten_apple:
             self.snake.eat_apple()
             self.snake.tail = self.snake.snake_items[-1]
             self.main_layout.addWidget(self.tail, 0, 0)
             self.apple.x, self.apple.y = self.generate_apple_pos()
             self.eaten_apple = False
+            self.update_score()
 
         self.apple.repaint()
+
+    def game_over(self):
+        message = QMessageBox()
+        message.setWindowTitle("Game Over")
+        message.setText("You collided with yourself! Game Over.")
+        message.addButton("Начать заново", QMessageBox.ButtonRole.AcceptRole)
+        message.addButton("Выход", QMessageBox.ButtonRole.RejectRole)
+        message.setDefaultButton(QMessageBox.StandardButton.Yes)
+        message.buttonClicked.connect(self.handle_game_over_response)
+        message.exec()
+
+    def handle_game_over_response(self, button):
+        if button.text() == "Начать заново":
+            self.restart_game()
+        else:
+            sys.exit()
+
+    def restart_game(self):
+        pass
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Left and self.snake.direction != 'Right':
