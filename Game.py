@@ -134,7 +134,7 @@ class Game(QMainWindow):
     def game_over(self):
         message = QMessageBox()
         message.setWindowTitle("Game Over")
-        message.setText("You collided with yourself! Game Over.")
+        message.setText("Ты столкнулся с самим собой! Игра завершена.")
         message.addButton("Начать заново", QMessageBox.ButtonRole.AcceptRole)
         message.addButton("Выход", QMessageBox.ButtonRole.RejectRole)
         message.setDefaultButton(QMessageBox.StandardButton.Yes)
