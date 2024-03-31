@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QTimer, pyqtSignal
 from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QWidget
 
 
 class Snake_Item(QWidget):

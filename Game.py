@@ -1,12 +1,13 @@
 import sys
 from random import randint
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QMainWindow, QFrame, QApplication, QGridLayout, QWidget, QVBoxLayout, QStackedLayout, \
-    QMessageBox, QLabel, QStatusBar
+from PyQt6.QtWidgets import QMainWindow, QGridLayout, QWidget, \
+    QMessageBox, QStatusBar
 
 from Apple import Apple
+from Audio import Audio
 from Snake import Snake, Snake_Item
 
 
@@ -76,6 +77,11 @@ class Game(QMainWindow):
 
         self.eaten_apple = False
 
+        self.audio = Audio()
+        self.audio.load_sounds_from_directory("sounds")
+
+        self.audio.play_sound("651670__code_box__desert-snake.wav", loop_count=10)
+
     def move_snake(self):
         self.snake.move_snake()
 
@@ -122,6 +128,7 @@ class Game(QMainWindow):
 
         self.snake_apple()
         if self.eaten_apple:
+            self.audio.play_sound("411595__omgbong__eating-an-apple-03.wav", 800)
             self.snake.eat_apple()
             self.snake.tail = self.snake.snake_items[-1]
             self.main_layout.addWidget(self.tail, 0, 0)
@@ -132,6 +139,9 @@ class Game(QMainWindow):
         self.apple.repaint()
 
     def game_over(self):
+        for sound in self.audio.sounds.values():
+            sound.stop()
+        self.audio.play_sound("533034__evretro__8-bit-game-over-soundtune.wav")
         message = QMessageBox()
         message.setWindowTitle("Game Over")
         message.setText("Ты столкнулся с самим собой! Игра завершена.")
