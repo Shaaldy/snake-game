@@ -1,11 +1,9 @@
-﻿beautifulsoup4==4.12.2
 certifi==2023.7.22
 charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 guidata==3.1.0
 guiqwt==4.4.5
-h5py==3.10.0
 idna==3.4
 layout==0.4.1
 numpy==1.26.4
@@ -15,13 +13,10 @@ pyqt-tools==1.0.0
 PyQt6==6.6.1
 PyQt6-Qt6==6.6.2
 PyQt6-sip==13.6.0
-python-dotenv==1.0.1
 PythonQwt==0.12.1
 QtPy==2.4.1
 requests==2.31.0
 scipy==1.12.0
-soupsieve==2.5
 tomli==2.0.1
 uic==0.0.1
 urllib3==2.1.0
-XlsxWriter==3.1.9
