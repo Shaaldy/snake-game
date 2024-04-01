@@ -174,6 +174,7 @@ class Game(QMainWindow):
             sys.exit()
 
     def restart_game(self):
+        self.toggle_pause()
         self.main_layout.removeWidget(self.head)
         self.main_layout.removeWidget(self.tail)
         self.main_layout.removeWidget(self.snake)
