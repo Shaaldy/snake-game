@@ -29,7 +29,7 @@ PyQt библиотека
 Клонировать репозиторий:
 
 ```bash
-git clone https://github.com/your_username/snake.git
+git clone https://github.com/Shaaldy/snake.git
 ```
 Установить необходимые зависимости:
 ```bash
