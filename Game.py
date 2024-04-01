@@ -41,7 +41,7 @@ class Game(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Snake")
-        self.setGeometry(300, 300, 500, 500)
+        self.setGeometry(300, 300, 300, 300)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
