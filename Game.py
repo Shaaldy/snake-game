@@ -4,11 +4,14 @@ from random import randint
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QMainWindow, QGridLayout, QWidget, \
-    QMessageBox, QStatusBar
+    QMessageBox, QStatusBar, QPushButton
 
 from Apple import Apple
 from Audio import Audio
 from Snake import Snake, Snake_Item
+
+HEIGHT = 375
+WIDTH = 375
 
 
 class Field(QWidget):
@@ -41,7 +44,7 @@ class Game(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Snake")
-        self.setGeometry(300, 300, 300, 300)
+        self.setGeometry(300, 300, HEIGHT, WIDTH)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -52,6 +55,7 @@ class Game(QMainWindow):
         self.statusBar = QStatusBar()
         self.setStatusBar(self.statusBar)
         self.score = 0
+        self.high_score = self.load_from_file()
         self.update_score()
 
         self.chess_board = Field()
@@ -70,9 +74,6 @@ class Game(QMainWindow):
         self.game_timer.timeout.connect(self.update_game)
         self.game_timer.start(10)
 
-        self.snake_timer = QTimer(self)
-        self.snake_timer.timeout.connect(self.move_snake)
-        self.snake_timer.start(30000)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.eaten_apple = False
@@ -81,6 +82,12 @@ class Game(QMainWindow):
         self.audio.load_sounds_from_directory("sounds")
 
         self.audio.play_sound("651670__code_box__desert-snake.wav", loop_count=10)
+
+        self.paused = False
+        self.toggle_pause_key = Qt.Key.Key_Escape
+        self.toggle_pause_button = QPushButton("Pause/Resume")
+        self.toggle_pause_button.clicked.connect(self.toggle_pause)
+        self.snake_timer = self.snake.timer
 
     def move_snake(self):
         self.snake.move_snake()
@@ -139,12 +146,21 @@ class Game(QMainWindow):
         self.apple.repaint()
 
     def game_over(self):
+        self.toggle_pause()
         for sound in self.audio.sounds.values():
             sound.stop()
-        self.audio.play_sound("533034__evretro__8-bit-game-over-soundtune.wav")
         message = QMessageBox()
         message.setWindowTitle("Game Over")
-        message.setText("Ты столкнулся с самим собой! Игра завершена.")
+        if self.score > self.high_score:
+            self.high_score = self.score
+            self.save_high_score()
+            message.setText(f"Ты столкнулся с самим собой! Игра завершена.\nТы поставил новый рекорд!!! {self.score}")
+            self.audio.play_sound("533034__evretro__8-bit-game-over-soundtune.wav")
+
+        else:
+            self.audio.play_sound("173859__jivatma07__j1game_over_mono.wav")
+            message.setText(f"Ты столкнулся с самим собой! Игра завершена.\nТвой счет: {self.score}")
+
         message.addButton("Начать заново", QMessageBox.ButtonRole.AcceptRole)
         message.addButton("Выход", QMessageBox.ButtonRole.RejectRole)
         message.setDefaultButton(QMessageBox.StandardButton.Yes)
@@ -158,15 +174,60 @@ class Game(QMainWindow):
             sys.exit()
 
     def restart_game(self):
-        pass
+        self.main_layout.removeWidget(self.head)
+        self.main_layout.removeWidget(self.tail)
+        self.main_layout.removeWidget(self.snake)
+        self.main_layout.removeWidget(self.apple)
+
+        self.head = Snake_Item()
+        self.tail = Snake_Item()
+        self.snake = Snake(self.head, self.tail)
+        self.apple = Apple()
+
+        self.main_layout.addWidget(self.head, 0, 0)
+        self.main_layout.addWidget(self.tail, 0, 0)
+        self.main_layout.addWidget(self.snake, 0, 0)
+        self.main_layout.addWidget(self.apple, 0, 0)
+
+        self.score = 0
+        self.update_score()
+
+        self.audio.play_sound("651670__code_box__desert-snake.wav", loop_count=10)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Left and self.snake.direction != 'Right':
-            self.snake.direction = 'Left'
-        elif event.key() == Qt.Key.Key_Right and self.snake.direction != 'Left':
-            self.snake.direction = 'Right'
-        elif event.key() == Qt.Key.Key_Up and self.snake.direction != 'Down':
-            self.snake.direction = 'Up'
-        elif event.key() == Qt.Key.Key_Down and self.snake.direction != 'Up':
-            self.snake.direction = 'Down'
-        event.accept()
+        if event.key() == Qt.Key.Key_Escape:
+            self.toggle_pause()
+        if not self.paused:
+            if event.key() == Qt.Key.Key_Left and self.snake.direction != 'Right':
+                self.snake.direction = 'Left'
+            elif event.key() == Qt.Key.Key_Right and self.snake.direction != 'Left':
+                self.snake.direction = 'Right'
+            elif event.key() == Qt.Key.Key_Up and self.snake.direction != 'Down':
+                self.snake.direction = 'Up'
+            elif event.key() == Qt.Key.Key_Down and self.snake.direction != 'Up':
+                self.snake.direction = 'Down'
+            event.accept()
+
+    def load_from_file(self):
+        try:
+            with open("high_score.txt", 'r') as file:
+                return int(file.read().strip())
+        except FileNotFoundError:
+            return 0
+
+    def save_high_score(self):
+        with open("high_score.txt", 'w') as file:
+            file.write(str(self.high_score))
+
+    def toggle_pause(self):
+        self.paused = not self.paused
+        if self.paused:
+            self.game_timer.stop()
+            self.snake_timer.stop()
+            self.statusBar.showMessage("Game Paused")
+            self.audio.pause_music("651670__code_box__desert-snake.wav")
+        else:
+            self.game_timer.start()
+            self.snake_timer.start()
+            self.statusBar.showMessage(f"Score: {self.score}")
+            self.audio.resume_music("651670__code_box__desert-snake.wav")

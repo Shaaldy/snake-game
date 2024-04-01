@@ -6,6 +6,7 @@ import os
 class Audio:
     def __init__(self):
         self.sounds = {}
+        self.paused_sounds = {}
 
     def load_sounds_from_directory(self, directory):
         for filename in os.listdir(directory):
@@ -24,3 +25,15 @@ class Audio:
             sound.play()
             if duration is not None:
                 QTimer.singleShot(duration, sound.stop)
+
+    def pause_music(self, name):
+        if name in self.sounds and name not in self.paused_sounds:
+            sound = self.sounds[name]
+            sound.stop()
+            self.paused_sounds[name] = True
+
+    def resume_music(self, name):
+        if name in self.paused_sounds:
+            sound = self.sounds[name]
+            sound.play()
+            del self.paused_sounds[name]
